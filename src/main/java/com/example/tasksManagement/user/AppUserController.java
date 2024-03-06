@@ -22,7 +22,7 @@ public class AppUserController {
 
     @GetMapping
     public AppUser findUser(@RequestParam String login) {
-        return appUserService.findUser(login);
+        return appUserService.findUserByLogin(login);
     }
 
     @PostMapping

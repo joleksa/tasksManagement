@@ -20,8 +20,16 @@ public class AppUserService {
         return appUserRepository.findAll();
     }
 
-    public AppUser findUser(String login) {
+    public AppUser findUserByLogin(String login) {
         Optional<AppUser> userOptional = appUserRepository.findByLogin(login);
+        if (userOptional.isEmpty()) {
+            throw new BusinessException("user doesn't exist");
+        }
+        return userOptional.get();
+    }
+
+    public AppUser findUserById(Long id) {
+        Optional<AppUser> userOptional = appUserRepository.findById(id);
         if (userOptional.isEmpty()) {
             throw new BusinessException("user doesn't exist");
         }
@@ -37,7 +45,7 @@ public class AppUserService {
     }
 
     public void deleteUser(String login) {
-        AppUser userOptional = findUser(login);
+        AppUser userOptional = findUserByLogin(login);
         appUserRepository.delete(userOptional);
     }
 

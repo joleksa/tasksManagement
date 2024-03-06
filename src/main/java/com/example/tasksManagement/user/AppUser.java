@@ -2,6 +2,7 @@ package com.example.tasksManagement.user;
 
 
 import com.example.tasksManagement.task.Task;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -23,8 +24,10 @@ public class AppUser {
     private String surname;
     @Setter
     private String login;
+    @JsonIgnore
     @OneToMany(mappedBy = "createdBy")
     private List<Task> createdTasks;
+    @JsonIgnore
     @OneToMany(mappedBy = "assignedUser")
     private List<Task> assignedTasks;
 }

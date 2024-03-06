@@ -13,8 +13,8 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "TASKS")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
 @Getter
+@Setter
 public class Task {
 
     @Id
@@ -34,4 +34,19 @@ public class Task {
     private LocalDateTime creationDate;
     private LocalDateTime modificationDate;
     private LocalDateTime executionDate;
+
+    public Task(TaskType taskType,
+                String description,
+                AppUser assignedUser,
+                AppUser createdBy,
+                int daysToEnd) {
+        this.taskType = taskType;
+        this.description = description;
+        this.taskStatus = TaskStatus.NEW;
+        this.assignedUser = assignedUser;
+        this.createdBy = createdBy;
+        this.executionDate = LocalDateTime.now().plusDays(daysToEnd);
+        this.creationDate = LocalDateTime.now();
+        this.modificationDate = LocalDateTime.now();
+    }
 }
