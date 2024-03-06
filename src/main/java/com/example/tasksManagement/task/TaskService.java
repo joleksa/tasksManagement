@@ -41,15 +41,36 @@ public class TaskService {
     public Task findTaskById(Long id) {
         Optional<Task> taskOptional = taskRepository.findById(id);
         if (taskOptional.isEmpty()) {
-            throw new BusinessException("task doesn't exist");
+            throw new BusinessException("Task doesn't exist");
         }
         return taskOptional.get();
     }
 
     public Task closeTask(Long id) {
         Task taskOptional = findTaskById(id);
+        if (taskOptional.getTaskStatus() == TaskStatus.CLOSED) {
+            throw new BusinessException("Task is already closed");
+        }
         taskOptional.setTaskStatus(TaskStatus.CLOSED);
-        return taskOptional;
+        return taskRepository.save(taskOptional);
+    }
+
+    public Task inProgressTask(Long id) {
+        Task taskOptional = findTaskById(id);
+        if (taskOptional.getTaskStatus() == TaskStatus.IN_PROGRESS) {
+            throw new BusinessException("Task is already in progress");
+        }
+        taskOptional.setTaskStatus(TaskStatus.IN_PROGRESS);
+        return taskRepository.save(taskOptional);
+    }
+
+    public Task cancelTask(Long id) {
+        Task taskOptional = findTaskById(id);
+        if (taskOptional.getTaskStatus() == TaskStatus.CANCELLED) {
+            throw new BusinessException("Task is already cancelled");
+        }
+        taskOptional.setTaskStatus(TaskStatus.CANCELLED);
+        return taskRepository.save(taskOptional);
     }
 
     public List<Task> getAllTasks() {
