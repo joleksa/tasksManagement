@@ -1,5 +1,6 @@
 package com.example.tasksManagement.task;
 
+import com.example.tasksManagement.BusinessException;
 import com.example.tasksManagement.Dto.TaskDto;
 import com.example.tasksManagement.task.taskEnum.TaskStatus;
 import com.example.tasksManagement.task.taskEnum.TaskType;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
@@ -34,6 +36,14 @@ public class TaskService {
                 assignedUser,
                 createdByUser,
                 taskDto.getDaysToEnd());
+    }
+
+    public Task findTaskById(Long id) {
+        Optional<Task> taskOptional = taskRepository.findById(id);
+        if (taskOptional.isEmpty()) {
+            throw new BusinessException("task doesn't exist");
+        }
+        return taskOptional.get();
     }
 
     public List<Task> getAllTasks() {
