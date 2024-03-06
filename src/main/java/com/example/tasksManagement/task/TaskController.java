@@ -25,4 +25,10 @@ public class TaskController {
 
     @PatchMapping("/close")
     public Task closeTask(@RequestParam Long id) { return taskService.closeTask(id);}
+
+    @PatchMapping("/in-progress")
+    public Task inProgressTask(@RequestParam Long id) { return taskService.inProgressTask(id);}
+
+    @PatchMapping("/cancel")
+    public Task cancelTask(@RequestParam Long id) { return taskService.cancelTask(id);}
 }
