@@ -46,6 +46,12 @@ public class TaskService {
         return taskOptional.get();
     }
 
+    public Task closeTask(Long id) {
+        Task taskOptional = findTaskById(id);
+        taskOptional.setTaskStatus(TaskStatus.CLOSED);
+        return taskOptional;
+    }
+
     public List<Task> getAllTasks() {
         return taskRepository.findAll();
     }

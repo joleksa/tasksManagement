@@ -1,13 +1,9 @@
 package com.example.tasksManagement.task;
 
 import com.example.tasksManagement.Dto.TaskDto;
-import com.example.tasksManagement.task.taskEnum.TaskStatus;
-import com.example.tasksManagement.task.taskEnum.TaskType;
-import com.example.tasksManagement.user.AppUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -26,4 +22,7 @@ public class TaskController {
 
     @GetMapping("/all")
     public List<Task> getAllTasks() { return taskService.getAllTasks();}
+
+    @PatchMapping("/close")
+    public Task closeTask(@RequestParam Long id) { return taskService.closeTask(id);}
 }
