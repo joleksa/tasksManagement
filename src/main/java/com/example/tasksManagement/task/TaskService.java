@@ -1,10 +1,42 @@
 package com.example.tasksManagement.task;
 
+import com.example.tasksManagement.Dto.TaskDto;
+import com.example.tasksManagement.task.taskEnum.TaskStatus;
+import com.example.tasksManagement.task.taskEnum.TaskType;
+import com.example.tasksManagement.user.AppUser;
+import com.example.tasksManagement.user.AppUserRepository;
+import com.example.tasksManagement.user.AppUserService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
+@RequiredArgsConstructor
 @Service
 public class TaskService {
-    public String helloWorld() {
-        return "hello world";
+    private final TaskRepository taskRepository;
+    private final AppUserService appUserService;
+
+
+    public Task createTask(TaskDto taskDto) {
+        AppUser assignedUser = appUserService.findUserById(taskDto.getAssignedUserId());
+        AppUser createdByUser = appUserService.findUserById(taskDto.getCreatedById());
+        Task task = toModel(taskDto, assignedUser, createdByUser);
+        return taskRepository.save(task);
+    }
+
+    private Task toModel(TaskDto taskDto, AppUser assignedUser, AppUser createdByUser) {
+        return new Task(taskDto.getTaskType(),
+                taskDto.getDescription(),
+                assignedUser,
+                createdByUser,
+                taskDto.getDaysToEnd());
+    }
+
+    public List<Task> getAllTasks() {
+        return taskRepository.findAll();
     }
 }

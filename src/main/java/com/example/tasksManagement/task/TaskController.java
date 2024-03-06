@@ -1,9 +1,14 @@
 package com.example.tasksManagement.task;
 
+import com.example.tasksManagement.Dto.TaskDto;
+import com.example.tasksManagement.task.taskEnum.TaskStatus;
+import com.example.tasksManagement.task.taskEnum.TaskType;
+import com.example.tasksManagement.user.AppUser;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor //tworzy konstruktor z wymaganymi polami, czyli taskService
@@ -11,8 +16,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class TaskController {
     private final TaskService taskService;
 
-    @GetMapping
-    public String helloWorld() {
-        return taskService.helloWorld();
+    @PostMapping
+    public Task createNewTask(@RequestBody TaskDto taskDto) {
+        return taskService.createTask(taskDto);
     }
+
+    @GetMapping
+    public List<Task> getAllTasks() { return taskService.getAllTasks();}
 }
