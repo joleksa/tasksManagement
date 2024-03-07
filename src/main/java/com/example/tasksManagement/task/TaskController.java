@@ -1,7 +1,11 @@
 package com.example.tasksManagement.task;
 
+import com.example.tasksManagement.Dto.AssignTaskDto;
 import com.example.tasksManagement.Dto.TaskDto;
+import com.example.tasksManagement.Dto.TaskResponseDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -13,8 +17,8 @@ public class TaskController {
     private final TaskService taskService;
 
     @PostMapping
-    public Task createNewTask(@RequestBody TaskDto taskDto) {
-        return taskService.createTask(taskDto);
+    ResponseEntity<TaskResponseDto> createNewTask(@RequestBody TaskDto taskDto) {
+        return new ResponseEntity<>(taskService.createTask(taskDto),HttpStatus.CREATED);
     }
 
     @GetMapping
@@ -24,11 +28,17 @@ public class TaskController {
     public List<Task> getAllTasks() { return taskService.getAllTasks();}
 
     @PatchMapping("/close")
-    public Task closeTask(@RequestParam Long id) { return taskService.closeTask(id);}
+    ResponseEntity<TaskResponseDto> closeTask(@RequestParam Long id) {
+        return new ResponseEntity<>(taskService.closeTask(id), HttpStatus.OK);}
 
     @PatchMapping("/in-progress")
-    public Task inProgressTask(@RequestParam Long id) { return taskService.inProgressTask(id);}
+    ResponseEntity<TaskResponseDto> inProgressTask(@RequestParam Long id) {
+        return new ResponseEntity<>(taskService.inProgressTask(id),HttpStatus.OK);}
 
     @PatchMapping("/cancel")
-    public Task cancelTask(@RequestParam Long id) { return taskService.cancelTask(id);}
+    ResponseEntity<TaskResponseDto> cancelTask(@RequestParam Long id) {
+        return new ResponseEntity<>(taskService.cancelTask(id),HttpStatus.OK);}
+    @PatchMapping("/assignTask")
+    ResponseEntity<TaskResponseDto> assignTask(@RequestBody AssignTaskDto assignTaskDto) {
+        return new ResponseEntity<>(taskService.assignTask(assignTaskDto),HttpStatus.OK);}
 }

@@ -49,4 +49,14 @@ public class Task {
         this.creationDate = LocalDateTime.now();
         this.modificationDate = LocalDateTime.now();
     }
+
+    public Task(TaskType taskType, String description, AppUser createdBy, AppUser assignedUser) {
+        this.taskType = taskType;
+        this.description = description;
+        this.taskStatus = TaskStatus.NEW;
+        this.createdBy = createdBy;
+        this.assignedUser = assignedUser;
+        this.creationDate = LocalDateTime.now();
+        this.modificationDate = LocalDateTime.now();
+    }
 }
