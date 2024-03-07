@@ -21,8 +21,8 @@ public class AppUserController {
     }
 
     @GetMapping
-    public AppUser findUser(@RequestParam String login) {
-        return appUserService.findUserByLogin(login);
+    public AppUser findUser(@RequestParam Long id) {
+        return appUserService.findUserById(id);
     }
 
     @PostMapping
