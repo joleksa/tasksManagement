@@ -25,7 +25,7 @@ public class TaskController {
     public Task findTaskById(@RequestParam Long id) { return taskService.findTaskById(id);}
 
     @GetMapping("/all")
-    public List<Task> getAllTasks() { return taskService.getAllTasks();}
+    public List<TaskResponseDto> getAllTasks(@RequestParam int pageNo, @RequestParam int pageSize) { return taskService.getAllTasks(pageNo, pageSize);}
 
     @PatchMapping("/close")
     ResponseEntity<TaskResponseDto> closeTask(@RequestParam Long id) {
@@ -41,4 +41,13 @@ public class TaskController {
     @PatchMapping("/assignTask")
     ResponseEntity<TaskResponseDto> assignTask(@RequestBody AssignTaskDto assignTaskDto) {
         return new ResponseEntity<>(taskService.assignTask(assignTaskDto),HttpStatus.OK);}
+
+    @GetMapping("/warned-tasks")
+    ResponseEntity<List<TaskResponseDto>> getWarnedTasks() {
+        return new ResponseEntity<>(taskService.getWarnedTasks(),HttpStatus.OK);}
+
+    @GetMapping("/expired-tasks")
+    ResponseEntity<List<TaskResponseDto>> getExpiredTasks() {
+        return new ResponseEntity<>(taskService.getExpiredTasks(),HttpStatus.OK);
+    }
 }
