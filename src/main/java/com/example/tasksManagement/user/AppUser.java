@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -14,6 +15,12 @@ import java.util.List;
 @AllArgsConstructor
 @Getter
 public class AppUser {
+    public AppUser(String name, String surname, String login) {
+        this.name = name;
+        this.surname = surname;
+        this.login = login;
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
@@ -26,8 +33,8 @@ public class AppUser {
     private String login;
     @JsonIgnore
     @OneToMany(mappedBy = "createdBy")
-    private List<Task> createdTasks;
+    private List<Task> createdTasks = new ArrayList<>();
     @JsonIgnore
     @OneToMany(mappedBy = "assignedUser")
-    private List<Task> assignedTasks;
+    private List<Task> assignedTasks = new ArrayList<>();
 }

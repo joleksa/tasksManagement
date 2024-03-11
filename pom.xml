@@ -42,7 +42,11 @@
 			<artifactId>postgresql</artifactId>
 			<version>42.7.2</version>
 		</dependency>
-
+		<dependency>
+			<groupId>org.hibernate.orm</groupId>
+			<artifactId>hibernate-core</artifactId>
+			<version>6.3.1.Final</version>
+		</dependency>
 	</dependencies>
 
 	<build>
