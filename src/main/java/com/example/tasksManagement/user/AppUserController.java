@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+
 import java.util.List;
 
 @RestController
@@ -13,6 +14,7 @@ import java.util.List;
 public class AppUserController {
 
     private final AppUserService appUserService;
+
     @Autowired
     public AppUserController(AppUserService appUserService) {
         this.appUserService = appUserService;
@@ -38,6 +40,4 @@ public class AppUserController {
         appUserService.deleteUser(login);
     }
 
-    @GetMapping("/createdBy")
-    ResponseEntity<List<Task>> getCreatedTasksByUser(@RequestParam Long id) { return new ResponseEntity<>(appUserService.getTasksCreatedBy(id), HttpStatus.OK);}
 }
