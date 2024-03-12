@@ -10,6 +10,7 @@ import java.util.Optional;
 
 public interface TaskRepository extends JpaRepository<Task, Long>{
     Optional<Task> findByTaskStatus(TaskStatus taskStatus);
+    List<Task> findListByTaskStatus(TaskStatus taskStatus);
     Optional<Task> findById(Long id);
     List<Task> findAll();
     @Query("SELECT t FROM Task t WHERE t.executionDate <= :warningDate AND t.executionDate > CURRENT_DATE ")
@@ -17,4 +18,5 @@ public interface TaskRepository extends JpaRepository<Task, Long>{
 
     @Query("SELECT t FROM Task t WHERE t.executionDate < CURRENT_DATE ")
     List<Task> findExpiredTasks(LocalDateTime expiredDate);
+
 }
