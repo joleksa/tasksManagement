@@ -3,8 +3,10 @@ package com.example.tasksManagement.task;
 import com.example.tasksManagement.BusinessException;
 import com.example.tasksManagement.Dto.AssignTaskDto;
 import com.example.tasksManagement.Dto.TaskDto;
+import com.example.tasksManagement.Dto.TaskFilterDto;
 import com.example.tasksManagement.Dto.TaskResponseDto;
 import com.example.tasksManagement.task.taskEnum.TaskStatus;
+import com.example.tasksManagement.task.taskEnum.TaskType;
 import com.example.tasksManagement.user.AppUser;
 import com.example.tasksManagement.user.AppUserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,9 +22,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-import static org.springframework.data.domain.Sort.Direction.ASC;
-import static org.springframework.data.domain.Sort.Direction.DESC;
 
 
 @Service
@@ -159,22 +158,77 @@ public class TaskService {
         return taskRepository.save(task);
     }
 
-    public List<TaskResponseDto> getExpiredTasks() {
+    public List<TaskResponseDto> getExpiredTasks() {//searching by query
         LocalDateTime expiredDate = LocalDateTime.now();
         return taskRepository.findExpiredTasks(expiredDate)
                .stream().map(this::getResponseDto).toList();
     }
 
-    public List<TaskResponseDto> getAssignedTasksToUser(Long userId) {
+    public List<TaskResponseDto> getAssignedTasksToUser(Long userId) {//searching by query
         AppUser assignedUser = appUserService.findUserById(userId);
         return assignedUser.getAssignedTasks()
                 .stream().map(this::getResponseDto).toList();
     }
 
-    public List<TaskResponseDto> getCreatedTasksByUser(Long id) {
+    public List<TaskResponseDto> getCreatedTasksByUser(Long id) {//searching by query
         AppUser createdBy = appUserService.findUserById(id);
         return createdBy.getCreatedTasks()
                 .stream().map(this::getResponseDto).toList();
+    }
+
+    public List<TaskResponseDto> getTaskByStatus(String status) {//searching by query
+        return taskRepository.findListByTaskStatus(TaskStatus.valueOf(status))
+                .stream().map(this::getResponseDto).toList();
+    }
+
+    public List<TaskResponseDto> getTaskByType(TaskFilterDto filterDto) {//searching by filter
+        List<Task> filteredTask = taskRepository.findAll()
+                .stream().filter(task -> findTaskByType(task,filterDto.getTaskType())).toList();
+        return filteredTask.stream().map(this::getResponseDto).toList();
+    }
+
+    private boolean findTaskByType(Task task, TaskType taskType) {
+        return task.getTaskType() == taskType;
+    }
+
+    public List<TaskResponseDto> getTaskByCreationDateRange(TaskFilterDto filterDto) {//searching by filter
+        List<Task> filteredTask = taskRepository.findAll()
+                .stream().filter(task -> isTaskCreationBetweenDateRange
+                        (task, filterDto.getStartDate(), filterDto.getEndDate())).toList();
+        return filteredTask.stream().map(this::getResponseDto).toList();
+    }
+
+    private boolean isTaskCreationBetweenDateRange(Task task, LocalDateTime startDate, LocalDateTime endDate) {
+        LocalDateTime taskCreationDate = task.getCreationDate();
+
+        if(startDate != null && taskCreationDate.isBefore(startDate)) {
+            return false;
+        }
+
+        if (startDate != null && taskCreationDate.isAfter(endDate)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public List<TaskResponseDto> getTaskByExecutionDateRange(TaskFilterDto taskFilterDto) {
+        List<Task> filteredTask =taskRepository.findAll()
+                .stream().filter(task -> task.getExecutionDate() != null && isTaskExecutionBetweenDateRange
+                        (task, taskFilterDto.getStartDate(), taskFilterDto.getEndDate())).toList();
+        return filteredTask.stream().map(this::getResponseDto).toList();
+    }
+
+    private boolean isTaskExecutionBetweenDateRange(Task task, LocalDateTime startDate, LocalDateTime endDate) {
+        LocalDateTime taskExecutionDate = task.getExecutionDate();
+
+        if(startDate != null && taskExecutionDate.isBefore(startDate)) {
+            return false;
+        }
+        if (startDate != null && taskExecutionDate.isAfter(endDate)) {
+            return false;
+        }
+        return true;
     }
 
 }
