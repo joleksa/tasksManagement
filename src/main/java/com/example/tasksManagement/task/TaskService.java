@@ -41,11 +41,11 @@ public class TaskService {
     public TaskResponseDto createTask(TaskDto taskDto) {
         AppUser assignedUser = appUserService.findUserById(taskDto.getAssignedUserId());
         AppUser createdByUser = appUserService.findUserById(taskDto.getCreatedById());
-        Task task = toModel(taskDto, assignedUser, createdByUser);
+        Task task = createNewTask(taskDto, assignedUser, createdByUser);
         return getResponseDto(taskRepository.save(task));
     }
 
-    private Task toModel(TaskDto taskDto, AppUser assignedUser, AppUser createdByUser) {
+    private Task createNewTask(TaskDto taskDto, AppUser assignedUser, AppUser createdByUser) {
         Integer daysToEnd = taskDto.getDaysToEnd();
         Task task = Task.builder()
                 .taskType(taskDto.getTaskType())
@@ -56,13 +56,6 @@ public class TaskService {
                 .build();
         task.setOptionalExecutionDate(daysToEnd);
         return task;
-    }
-
-    private int prepareExecutionDate(int daysToEnd) {
-        if (daysToEnd <= 0) {
-            throw new BusinessException("Days cannot be negative");
-        }
-        return daysToEnd;
     }
 
     public Task findTaskById(Long id) {
