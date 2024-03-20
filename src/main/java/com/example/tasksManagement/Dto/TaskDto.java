@@ -10,5 +10,5 @@ public class TaskDto {
     private String description;
     private Long assignedUserId;
     private Long createdById;
-    private int daysToEnd;
+    private Integer daysToEnd;
 }
