@@ -145,7 +145,7 @@ public class TaskService {
         }
     }
 
-    private TaskResponseDto getResponseDto(Task task) {
+    TaskResponseDto getResponseDto(Task task) {
         return new TaskResponseDto(task.getTaskType(),
                 task.getDescription(), task.getTaskStatus(), task.getExecutionDate());
     }
