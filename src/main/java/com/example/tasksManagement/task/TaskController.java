@@ -6,6 +6,7 @@ import com.example.tasksManagement.Dto.TaskFilterDto;
 import com.example.tasksManagement.Dto.TaskResponseDto;
 import com.example.tasksManagement.task.taskEnum.TaskType;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,7 @@ import java.util.List;
 @RequestMapping("api/task")
 public class TaskController {
     private final TaskService taskService;
+    private final TaskFilterService taskFilterService;
 
     @PostMapping
     ResponseEntity<TaskResponseDto> createNewTask(@RequestBody TaskDto taskDto) {
@@ -41,44 +43,44 @@ public class TaskController {
         return new ResponseEntity<>(taskService.assignTask(assignTaskDto),HttpStatus.OK);}
 
     @GetMapping
-    public Task findTaskById(@RequestParam Long id) { return taskService.findTaskById(id);}
+    ResponseEntity<Task> findTaskById(@RequestParam Long id) { return new ResponseEntity<>(taskService.findTaskById(id),HttpStatus.OK);}
 
     @GetMapping("/all")
     ResponseEntity<List<TaskResponseDto>> getAllTasks() {
-        return new ResponseEntity<>(taskService.getAllTasks(), HttpStatus.OK);}
+        return new ResponseEntity<>(taskFilterService.getAllTasks(), HttpStatus.OK);}
 
     @GetMapping("/all-sorted")
-    ResponseEntity<List<TaskResponseDto>> getAllTasksSortedAndPaginated
+    ResponseEntity<Page<TaskResponseDto>> getAllTasksSortedAndPaginated
             (@RequestParam int pageNo,
              @RequestParam int pageSize,
              @RequestParam String field,
              @RequestParam String direction) {
-        return new ResponseEntity<>(taskService
+        return new ResponseEntity<>(taskFilterService
                 .getAllTasksSortedAndPaginated(pageNo, pageSize, field, direction)
                 , HttpStatus.OK);}
 
     @GetMapping("/warned-tasks")
     ResponseEntity<List<TaskResponseDto>> getWarnedTasks() {
-        return new ResponseEntity<>(taskService.getWarnedTasks(),HttpStatus.OK);}
+        return new ResponseEntity<>(taskFilterService.getWarnedTasks(),HttpStatus.OK);}
 
     @GetMapping("/expired-tasks")
     ResponseEntity<List<TaskResponseDto>> getExpiredTasks() {
-        return new ResponseEntity<>(taskService.getExpiredTasks(),HttpStatus.OK);
+        return new ResponseEntity<>(taskFilterService.getExpiredTasks(),HttpStatus.OK);
     }
 
     @GetMapping("/created-by")
     ResponseEntity<List<TaskResponseDto>> getCreatedTasksByUser(@RequestParam Long id) {
-        return new ResponseEntity<>(taskService.getCreatedTasksByUser(id), HttpStatus.OK);
+        return new ResponseEntity<>(taskFilterService.getCreatedTasksByUser(id), HttpStatus.OK);
     }
 
     @GetMapping("/assigned-to")
     ResponseEntity<List<TaskResponseDto>> getTasksAssignedToUser(@RequestParam Long id) {
-        return new ResponseEntity<>(taskService.getAssignedTasksToUser(id), HttpStatus.OK);
+        return new ResponseEntity<>(taskFilterService.getAssignedTasksToUser(id), HttpStatus.OK);
     }
 
     @GetMapping("/status")
     ResponseEntity<List<TaskResponseDto>> getTasksByStatus(@RequestParam String status) {
-        return new ResponseEntity<>(taskService.getTaskByStatus(status), HttpStatus.OK);
+        return new ResponseEntity<>(taskFilterService.getTaskByStatus(status), HttpStatus.OK);
     }
 
     @GetMapping("/creation-date-range")
@@ -86,7 +88,7 @@ public class TaskController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)LocalDateTime startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)LocalDateTime endDate) {
         TaskFilterDto filterDto = new TaskFilterDto(startDate, endDate);
-        return new ResponseEntity<>(taskService.getTaskByCreationDateRange(filterDto),HttpStatus.OK);
+        return new ResponseEntity<>(taskFilterService.getTaskByCreationDateRange(filterDto),HttpStatus.OK);
     }
 
     @GetMapping("/execution-date-range")
@@ -94,13 +96,13 @@ public class TaskController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)LocalDateTime startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)LocalDateTime endDate) {
         TaskFilterDto filterDto = new TaskFilterDto(startDate, endDate);
-        return new ResponseEntity<>(taskService.getTaskByExecutionDateRange(filterDto),HttpStatus.OK);
+        return new ResponseEntity<>(taskFilterService.getTaskByExecutionDateRange(filterDto),HttpStatus.OK);
     }
 
     @GetMapping("/task-type")
     ResponseEntity<List<TaskResponseDto>> getTasksByType(@RequestParam TaskType taskType) {
         TaskFilterDto filterDto = new TaskFilterDto(taskType);
-        return new ResponseEntity<>(taskService.getTaskByType(filterDto),HttpStatus.OK);
+        return new ResponseEntity<>(taskFilterService.getTaskByType(filterDto),HttpStatus.OK);
     }
 
 
