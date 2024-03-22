@@ -86,12 +86,12 @@ public class TaskService {
     }
 
     public TaskResponseDto inProgressTask(Long id) {
-        Task taskOptional = findTaskById(id);
-        if (taskOptional.getTaskStatus() == TaskStatus.IN_PROGRESS) {
+        Task task = findTaskById(id);
+        if (task.getTaskStatus() == TaskStatus.IN_PROGRESS) {
             throw new BusinessException("Task is already in progress");
         }
-        taskOptional.setTaskStatus(TaskStatus.IN_PROGRESS);
-        return getResponseDto(saveModificatedTask(taskOptional));
+        task.setTaskStatus(TaskStatus.IN_PROGRESS);
+        return getResponseDto(saveModificatedTask(task));
     }
 
     public TaskResponseDto cancelTask(Long id) {
@@ -112,8 +112,7 @@ public class TaskService {
     public List<TaskResponseDto> getAllTasksSortedAndPaginated(int pageNo, int pageSize, String field, String direction) {
         Page<Task> tasks = getPageableTasks(pageNo, pageSize, field, direction);
         return tasks.getContent().stream()
-                .map(this::getResponseDto)
-                .collect(Collectors.toList());
+                .map(this::getResponseDto).toList();
     }
 
     private Page<Task> getPageableTasks(int pageNo, int pageSize,
@@ -134,8 +133,9 @@ public class TaskService {
     public List <TaskResponseDto> getWarnedTasks() {
         LocalDateTime warningDate = LocalDateTime.now()
                 .plusDays(expirationDaysWarning);
-        return taskRepository.findWarnedTasks(warningDate)
-                .stream().map(this::getResponseDto).toList();
+        return taskRepository.findWarnedTasks(warningDate).stream()
+                .map(this::getResponseDto)
+                .toList();
     }
 
 
@@ -160,75 +160,53 @@ public class TaskService {
 
     public List<TaskResponseDto> getExpiredTasks() {//searching by query
         LocalDateTime expiredDate = LocalDateTime.now();
-        return taskRepository.findExpiredTasks(expiredDate)
-               .stream().map(this::getResponseDto).toList();
+        return taskRepository.findExpiredTasks(expiredDate).stream()
+                .map(this::getResponseDto)
+                .toList();
     }
 
     public List<TaskResponseDto> getAssignedTasksToUser(Long userId) {//searching by query
         AppUser assignedUser = appUserService.findUserById(userId);
-        return assignedUser.getAssignedTasks()
-                .stream().map(this::getResponseDto).toList();
+        return assignedUser.getAssignedTasks().stream()
+                .map(this::getResponseDto)
+                .toList();
     }
 
     public List<TaskResponseDto> getCreatedTasksByUser(Long id) {//searching by query
         AppUser createdBy = appUserService.findUserById(id);
-        return createdBy.getCreatedTasks()
-                .stream().map(this::getResponseDto).toList();
+        return createdBy.getCreatedTasks().stream()
+                .map(this::getResponseDto)
+                .toList();
     }
 
     public List<TaskResponseDto> getTaskByStatus(String status) {//searching by query
-        return taskRepository.findListByTaskStatus(TaskStatus.valueOf(status))
-                .stream().map(this::getResponseDto).toList();
+        return taskRepository.findListByTaskStatus(TaskStatus.valueOf(status)).stream()
+                .map(this::getResponseDto)
+                .toList();
     }
 
     public List<TaskResponseDto> getTaskByType(TaskFilterDto filterDto) {//searching by filter
-        List<Task> filteredTask = taskRepository.findAll()
-                .stream().filter(task -> findTaskByType(task,filterDto.getTaskType())).toList();
-        return filteredTask.stream().map(this::getResponseDto).toList();
-    }
-
-    private boolean findTaskByType(Task task, TaskType taskType) {
-        return task.getTaskType() == taskType;
+        return taskRepository.findAll().stream()
+                .filter(task -> task.getTaskType() == filterDto.getTaskType())
+                .map(this::getResponseDto)
+                .toList();
     }
 
     public List<TaskResponseDto> getTaskByCreationDateRange(TaskFilterDto filterDto) {//searching by filter
-        List<Task> filteredTask = taskRepository.findAll()
-                .stream().filter(task -> isTaskCreationBetweenDateRange
-                        (task, filterDto.getStartDate(), filterDto.getEndDate())).toList();
-        return filteredTask.stream().map(this::getResponseDto).toList();
+        return taskRepository.findAll().stream()
+                .filter(task -> task.getCreationDate().isAfter(filterDto.getStartDate()) &&
+                        task.getCreationDate().isBefore(filterDto.getEndDate()))
+                .map(this::getResponseDto)
+                .toList();
     }
 
-    private boolean isTaskCreationBetweenDateRange(Task task, LocalDateTime startDate, LocalDateTime endDate) {
-        LocalDateTime taskCreationDate = task.getCreationDate();
-
-        if(startDate != null && taskCreationDate.isBefore(startDate)) {
-            return false;
-        }
-
-        if (startDate != null && taskCreationDate.isAfter(endDate)) {
-            return false;
-        }
-
-        return true;
-    }
-
-    public List<TaskResponseDto> getTaskByExecutionDateRange(TaskFilterDto taskFilterDto) {
-        List<Task> filteredTask =taskRepository.findAll()
-                .stream().filter(task -> task.getExecutionDate() != null && isTaskExecutionBetweenDateRange
-                        (task, taskFilterDto.getStartDate(), taskFilterDto.getEndDate())).toList();
-        return filteredTask.stream().map(this::getResponseDto).toList();
-    }
-
-    private boolean isTaskExecutionBetweenDateRange(Task task, LocalDateTime startDate, LocalDateTime endDate) {
-        LocalDateTime taskExecutionDate = task.getExecutionDate();
-
-        if(startDate != null && taskExecutionDate.isBefore(startDate)) {
-            return false;
-        }
-        if (startDate != null && taskExecutionDate.isAfter(endDate)) {
-            return false;
-        }
-        return true;
+    public List<TaskResponseDto> getTaskByExecutionDateRange(TaskFilterDto filterDto) {
+        return taskRepository.findAll().stream()
+                .filter(task -> task.getExecutionDate() != null &&
+                        task.getExecutionDate().isAfter(filterDto.getStartDate())
+                        && task.getExecutionDate().isBefore(filterDto.getEndDate()))
+                .map(this::getResponseDto)
+                .toList();
     }
 
 }

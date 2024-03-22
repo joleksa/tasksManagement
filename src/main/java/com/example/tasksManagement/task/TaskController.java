@@ -7,6 +7,7 @@ import com.example.tasksManagement.Dto.TaskResponseDto;
 import com.example.tasksManagement.task.taskEnum.TaskType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cglib.core.Local;
+import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -84,8 +85,8 @@ public class TaskController {
 
     @GetMapping("/creation-date-range")
     ResponseEntity<List<TaskResponseDto>> getTasksByCreationDateRange(
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)LocalDateTime startDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)LocalDateTime endDate) {
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)LocalDateTime startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)LocalDateTime endDate) {
         TaskFilterDto filterDto = new TaskFilterDto(startDate, endDate);
         return new ResponseEntity<>(taskService.getTaskByCreationDateRange(filterDto),HttpStatus.OK);
     }

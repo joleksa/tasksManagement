@@ -1,5 +1,6 @@
 package com.example.tasksManagement.task;
 
+import com.example.tasksManagement.BusinessException;
 import com.example.tasksManagement.Dto.TaskResponseDto;
 import com.example.tasksManagement.task.taskEnum.TaskStatus;
 import com.example.tasksManagement.task.taskEnum.TaskType;
@@ -7,16 +8,19 @@ import com.example.tasksManagement.user.AppUser;
 import com.example.tasksManagement.user.AppUserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 import org.springframework.util.Assert;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 class TaskServiceTest {
 
@@ -44,10 +48,27 @@ class TaskServiceTest {
 
     @Test
     void should_change_task_status_to_in_progress() {
-//        AppUser customUser = createCustomUser();
-//        Task task = new Task(1L, TaskType.CREATE_MONTHLY_REPORT,"test", TaskStatus.NEW, customUser, customUser , LocalDateTime.now().minusDays(2), LocalDateTime.now().minusDays(2), LocalDateTime.now().plusDays(5));
-//        taskService.inProgressTask(1L);
-//        assertEquals(TaskStatus.IN_PROGRESS,task.getTaskStatus());
+       AppUser customUser = createCustomUser();
+       Task task = createdTask(TaskStatus.NEW,customUser);
+       when(taskRepository.findById(1L)).thenReturn(Optional.of(task));
+       when(taskRepository.save(task)).thenReturn(createdTask(TaskStatus.IN_PROGRESS, customUser));
+       TaskResponseDto result = taskService.inProgressTask(1L);
+       assertEquals(TaskStatus.IN_PROGRESS,result.getTaskStatus());
+    }
+
+    @Test
+    void should_throw_exception_when_task_is_already_in_progress() {
+        AppUser customUser = createCustomUser();
+        Task task = createdTask(TaskStatus.IN_PROGRESS,customUser);
+        when(taskRepository.findById(1L)).thenReturn(Optional.of(task));
+        assertThrows(BusinessException.class,() -> taskService.inProgressTask(1L));
+    }
+
+
+    Task createdTask(TaskStatus taskStatus, AppUser customUser) {
+        return new Task(1L, TaskType.PREPARE_CLIENT_PRESENTATION,"test",
+                taskStatus, customUser, customUser , LocalDateTime.now().minusDays(2),
+                LocalDateTime.now().minusDays(2), LocalDateTime.now().plusDays(5));
     }
 
     @Test
