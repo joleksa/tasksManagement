@@ -21,23 +21,33 @@ public class AppUserController {
     }
 
     @GetMapping("/all")
-    public List<AppUser> findAllUsers() {
-        return appUserService.getAppUsers();
+    ResponseEntity<List<AppUser>> findAllUsers() {
+        return ResponseEntity
+                .ok()
+                .body(appUserService.getAppUsers());
     }
 
     @GetMapping
-    public AppUser findUser(@RequestParam Long id) {
-        return appUserService.findUserById(id);
+    ResponseEntity<AppUser> findUser(@RequestParam Long id) {
+        return ResponseEntity
+                .ok()
+                .body(appUserService.findUserById(id));
     }
 
     @PostMapping
-    public void registerNewUser(@RequestBody AppUser appUser) {
+    ResponseEntity<Void> registerNewUser(@RequestBody AppUser appUser) {
         appUserService.addNewUser(appUser);
+        return ResponseEntity
+                .ok()
+                .build();
     }
 
     @DeleteMapping
-    public void deleteUser(@RequestParam String login) {
+    ResponseEntity<Void> deleteUser(@RequestParam String login) {
         appUserService.deleteUser(login);
+        return ResponseEntity
+                .ok()
+                .build();
     }
 
 }
