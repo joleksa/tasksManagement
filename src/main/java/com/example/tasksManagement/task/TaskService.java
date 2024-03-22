@@ -6,7 +6,6 @@ import com.example.tasksManagement.Dto.TaskDto;
 import com.example.tasksManagement.Dto.TaskFilterDto;
 import com.example.tasksManagement.Dto.TaskResponseDto;
 import com.example.tasksManagement.task.taskEnum.TaskStatus;
-import com.example.tasksManagement.task.taskEnum.TaskType;
 import com.example.tasksManagement.user.AppUser;
 import com.example.tasksManagement.user.AppUserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +20,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 
 @Service
@@ -43,29 +41,21 @@ public class TaskService {
     public TaskResponseDto createTask(TaskDto taskDto) {
         AppUser assignedUser = appUserService.findUserById(taskDto.getAssignedUserId());
         AppUser createdByUser = appUserService.findUserById(taskDto.getCreatedById());
-        Task task = toModel(taskDto, assignedUser, createdByUser);
+        Task task = createNewTask(taskDto, assignedUser, createdByUser);
         return getResponseDto(taskRepository.save(task));
     }
 
-    private Task toModel(TaskDto taskDto, AppUser assignedUser, AppUser createdByUser) {
-        int daysToEnd = prepareExecutionDate(taskDto.getDaysToEnd());
-        return daysToEnd == 0 //if
-                ? new Task(taskDto.getTaskType(),
-                taskDto.getDescription(),
-                assignedUser,
-                createdByUser)
-                : new Task(taskDto.getTaskType(),
-                taskDto.getDescription(),
-                assignedUser,
-                createdByUser,
-                daysToEnd);
-    }
-
-    private int prepareExecutionDate(int daysToEnd) {
-        if (daysToEnd < 0) {
-            throw new BusinessException("Days cannot be negative");
-        }
-        return daysToEnd;
+    private Task createNewTask(TaskDto taskDto, AppUser assignedUser, AppUser createdByUser) {
+        Integer daysToEnd = taskDto.getDaysToEnd();
+        Task task = Task.builder()
+                .taskType(taskDto.getTaskType())
+                .description(taskDto.getDescription())
+                .taskStatus(TaskStatus.NEW)
+                .assignedUser(assignedUser)
+                .createdBy(createdByUser)
+                .build();
+        task.setOptionalExecutionDate(daysToEnd);
+        return task;
     }
 
     public Task findTaskById(Long id) {
@@ -118,7 +108,7 @@ public class TaskService {
     private Page<Task> getPageableTasks(int pageNo, int pageSize,
                                         String field, String direction) {
         Pageable pageable = PageRequest.of(pageNo, pageSize)
-                .withSort(Sort.Direction.fromString(direction),field);
+                .withSort(Sort.Direction.fromString(direction), field);
         return taskRepository.findAll(pageable);
     }
 
@@ -130,7 +120,7 @@ public class TaskService {
         return getResponseDto(saveModificatedTask(task));
     }
 
-    public List <TaskResponseDto> getWarnedTasks() {
+    public List<TaskResponseDto> getWarnedTasks() {
         LocalDateTime warningDate = LocalDateTime.now()
                 .plusDays(expirationDaysWarning);
         return taskRepository.findWarnedTasks(warningDate).stream()

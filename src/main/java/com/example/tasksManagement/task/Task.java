@@ -37,28 +37,9 @@ public class Task {
     private LocalDateTime modificationDate;
     private LocalDateTime executionDate;
 
-    public Task(TaskType taskType,
-                String description,
-                AppUser assignedUser,
-                AppUser createdBy,
-                int daysToEnd) {
-        this.taskType = taskType;
-        this.description = description;
-        this.taskStatus = TaskStatus.NEW;
-        this.assignedUser = assignedUser;
-        this.createdBy = createdBy;
-        this.executionDate = LocalDateTime.now().plusDays(daysToEnd);
-        this.creationDate = LocalDateTime.now();
-        this.modificationDate = LocalDateTime.now();
-    }
-
-    public Task(TaskType taskType, String description, AppUser createdBy, AppUser assignedUser) {
-        this.taskType = taskType;
-        this.description = description;
-        this.taskStatus = TaskStatus.NEW;
-        this.createdBy = createdBy;
-        this.assignedUser = assignedUser;
-        this.creationDate = LocalDateTime.now();
-        this.modificationDate = LocalDateTime.now();
+    public void setOptionalExecutionDate(Integer daysToEnd) {
+        if (daysToEnd != null) {
+            this.executionDate = LocalDateTime.now().plusDays(daysToEnd);
+        }
     }
 }
