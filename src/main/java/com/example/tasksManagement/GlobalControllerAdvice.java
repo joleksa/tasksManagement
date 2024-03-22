@@ -11,7 +11,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @Slf4j
 public class GlobalControllerAdvice extends ResponseEntityExceptionHandler {
 
-    private static final String UNEXPECTED_MESSAGE = "Unexpected error. Please contact the administrator.";
+    //private static final String UNEXPECTED_MESSAGE = "Unexpected error. Please contact the administrator.";
 
     @ExceptionHandler( value = {BusinessException.class})
     protected ResponseEntity<Object> handleUnexpectedServerError(BusinessException ex) {

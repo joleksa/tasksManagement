@@ -26,12 +26,14 @@ class TaskServiceTest {
 
     private final TaskRepository taskRepository = Mockito.mock(TaskRepository.class);
     private final AppUserService appUserService = Mockito.mock(AppUserService.class);
+    private TaskFilterService taskFilterService;
     private final int expirationDaysWarning = 3;
     private TaskService taskService;
 
     @BeforeEach
     void setUp() {
-        taskService = new TaskService(taskRepository, appUserService, expirationDaysWarning);
+        taskService = new TaskService(taskRepository, appUserService);
+        taskFilterService = new TaskFilterService(taskRepository,appUserService, taskService, expirationDaysWarning);
     }
 
     @Test
@@ -91,7 +93,7 @@ class TaskServiceTest {
     void should_return_all_expired_tasks() {
         List<Task> tasks = getTasksForMock(LocalDateTime.now().minusDays(1));
         when(taskRepository.findExpiredTasks(any())).thenReturn(tasks);
-        List<TaskResponseDto> expiredTasks = taskService.getExpiredTasks();
+        List<TaskResponseDto> expiredTasks = taskFilterService.getExpiredTasks();
         assertEquals(2,expiredTasks.size());
         assertTrue(LocalDateTime.now().isAfter(expiredTasks.get(0).getExecutionDate()));
     }
