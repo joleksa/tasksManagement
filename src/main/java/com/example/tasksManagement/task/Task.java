@@ -27,10 +27,10 @@ public class Task {
     private String description;
     @Enumerated(EnumType.STRING)
     private TaskStatus taskStatus;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by")
     private AppUser createdBy;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assigned_user")
     private AppUser assignedUser;
     private LocalDateTime creationDate;

@@ -2,9 +2,12 @@ package com.example.tasksManagement.user;
 
 
 import com.example.tasksManagement.task.Task;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.context.annotation.Lazy;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,10 +34,10 @@ public class AppUser {
     private String surname;
     @Setter
     private String login;
-    @JsonIgnore
-    @OneToMany(mappedBy = "createdBy")
+    //TODO zastapic jsonIgnore
+    @OneToMany(mappedBy = "createdBy", fetch = FetchType.LAZY)
     private List<Task> createdTasks = new ArrayList<>();
-    @JsonIgnore
-    @OneToMany(mappedBy = "assignedUser")
+    @JsonBackReference
+    @OneToMany(mappedBy = "assignedUser", fetch = FetchType.LAZY)
     private List<Task> assignedTasks = new ArrayList<>();
 }
