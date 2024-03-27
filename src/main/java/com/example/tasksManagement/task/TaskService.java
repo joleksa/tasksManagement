@@ -3,22 +3,14 @@ package com.example.tasksManagement.task;
 import com.example.tasksManagement.BusinessException;
 import com.example.tasksManagement.Dto.AssignTaskDto;
 import com.example.tasksManagement.Dto.TaskDto;
-import com.example.tasksManagement.Dto.TaskFilterDto;
 import com.example.tasksManagement.Dto.TaskResponseDto;
 import com.example.tasksManagement.task.taskEnum.TaskStatus;
 import com.example.tasksManagement.user.AppUser;
 import com.example.tasksManagement.user.AppUserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 
 
@@ -64,12 +56,12 @@ public class TaskService {
     }
 
     public TaskResponseDto closeTask(Long id) {
-        Task taskOptional = findTaskById(id);
-        if (taskOptional.getTaskStatus() == TaskStatus.CLOSED) {
+        Task task = findTaskById(id);
+        if (task.getTaskStatus() == TaskStatus.CLOSED) {
             throw new BusinessException("Task is already closed");
         }
-        taskOptional.setTaskStatus(TaskStatus.CLOSED);
-        return getResponseDto(saveModificatedTask(taskOptional));
+        task.setTaskStatus(TaskStatus.CLOSED);
+        return getResponseDto(saveModificatedTask(task));
     }
 
     public TaskResponseDto inProgressTask(Long id) {
@@ -82,12 +74,12 @@ public class TaskService {
     }
 
     public TaskResponseDto cancelTask(Long id) {
-        Task taskOptional = findTaskById(id);
-        if (taskOptional.getTaskStatus() == TaskStatus.CANCELLED) {
+        Task task = findTaskById(id);
+        if (task.getTaskStatus() == TaskStatus.CANCELLED) {
             throw new BusinessException("Task is already cancelled");
         }
-        taskOptional.setTaskStatus(TaskStatus.CANCELLED);
-        return getResponseDto(saveModificatedTask(taskOptional));
+        task.setTaskStatus(TaskStatus.CANCELLED);
+        return getResponseDto(saveModificatedTask(task));
     }
 
     public TaskResponseDto assignTask(AssignTaskDto assignTaskDto) {

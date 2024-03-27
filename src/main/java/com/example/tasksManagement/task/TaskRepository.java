@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Optional;
 
 public interface TaskRepository extends JpaRepository<Task, Long>{
-    Optional<Task> findByTaskStatus(TaskStatus taskStatus);
     List<Task> findListByTaskStatus(TaskStatus taskStatus);
     Optional<Task> findById(Long id);
     List<Task> findAll();

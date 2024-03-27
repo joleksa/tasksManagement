@@ -35,6 +35,7 @@ public class AppUser {
     @Setter
     private String login;
     //TODO zastapic jsonIgnore
+    @JsonIgnore
     @OneToMany(mappedBy = "createdBy", fetch = FetchType.LAZY)
     private List<Task> createdTasks = new ArrayList<>();
     @JsonBackReference

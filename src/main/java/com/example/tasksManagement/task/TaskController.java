@@ -8,7 +8,6 @@ import com.example.tasksManagement.task.taskEnum.TaskType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,38 +15,69 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
-@RequiredArgsConstructor //tworzy konstruktor z wymaganymi polami, czyli taskService
+@RequiredArgsConstructor
 @RequestMapping("api/task")
 public class TaskController {
     private final TaskService taskService;
     private final TaskFilterService taskFilterService;
 
+    public TaskResponseDto responseDto(Task task) {
+        return new TaskResponseDto(task.getTaskType(),
+                task.getDescription(), task.getTaskStatus(), task.getExecutionDate());
+    }
+
     @PostMapping
     ResponseEntity<TaskResponseDto> createNewTask(@RequestBody TaskDto taskDto) {
-        return new ResponseEntity<>(taskService.createTask(taskDto),HttpStatus.CREATED);
+        return ResponseEntity
+                .ok()
+                .body(taskService.createTask(taskDto));
     }
 
     @PatchMapping("/close")
     ResponseEntity<TaskResponseDto> closeTask(@RequestParam Long id) {
-        return new ResponseEntity<>(taskService.closeTask(id), HttpStatus.OK);}
+        return ResponseEntity
+                .ok()
+                .body(taskService.closeTask(id));
+    }
 
     @PatchMapping("/in-progress")
     ResponseEntity<TaskResponseDto> inProgressTask(@RequestParam Long id) {
-        return new ResponseEntity<>(taskService.inProgressTask(id),HttpStatus.OK);}
+        TaskResponseDto body = taskService.inProgressTask(id);
+        return ResponseEntity
+                .ok()
+                .body(body);
+    }
 
     @PatchMapping("/cancel")
     ResponseEntity<TaskResponseDto> cancelTask(@RequestParam Long id) {
-        return new ResponseEntity<>(taskService.cancelTask(id),HttpStatus.OK);}
+        TaskResponseDto responseBody = taskService.cancelTask(id);
+        return ResponseEntity
+                .ok()
+                .body(responseBody);
+    }
     @PatchMapping("/assign-task")
     ResponseEntity<TaskResponseDto> assignTask(@RequestBody AssignTaskDto assignTaskDto) {
-        return new ResponseEntity<>(taskService.assignTask(assignTaskDto),HttpStatus.OK);}
+        TaskResponseDto body = taskService.assignTask(assignTaskDto);
+        return ResponseEntity
+                .ok()
+                .body(body);
+    }
 
     @GetMapping
-    ResponseEntity<Task> findTaskById(@RequestParam Long id) { return new ResponseEntity<>(taskService.findTaskById(id),HttpStatus.OK);}
+    ResponseEntity<TaskResponseDto> findTaskById(@RequestParam Long id) {
+        TaskResponseDto taskById = responseDto(taskService.findTaskById(id));
+        return ResponseEntity
+                .ok()
+                .body(taskById);
+    }
 
     @GetMapping("/all")
     ResponseEntity<List<TaskResponseDto>> getAllTasks() {
-        return new ResponseEntity<>(taskFilterService.getAllTasks(), HttpStatus.OK);}
+        List<TaskResponseDto> allTasks = taskFilterService.getAllTasks();
+        return ResponseEntity
+                .ok()
+                .body(allTasks);
+    }
 
     @GetMapping("/all-sorted")
     ResponseEntity<Page<TaskResponseDto>> getAllTasksSortedAndPaginated
@@ -55,32 +85,48 @@ public class TaskController {
              @RequestParam int pageSize,
              @RequestParam String field,
              @RequestParam String direction) {
-        return new ResponseEntity<>(taskFilterService
-                .getAllTasksSortedAndPaginated(pageNo, pageSize, field, direction)
-                , HttpStatus.OK);}
+        Page<TaskResponseDto> allTasksSortedAndPaginated = taskFilterService.getAllTasksSortedAndPaginated(pageNo, pageSize, field, direction);
+        return ResponseEntity
+                .ok()
+                .body(allTasksSortedAndPaginated);
+    }
 
     @GetMapping("/warned-tasks")
     ResponseEntity<List<TaskResponseDto>> getWarnedTasks() {
-        return new ResponseEntity<>(taskFilterService.getWarnedTasks(),HttpStatus.OK);}
+        List<TaskResponseDto> warnedTasks = taskFilterService.getWarnedTasks();
+        return ResponseEntity
+                .ok()
+                .body(warnedTasks);
+    }
 
     @GetMapping("/expired-tasks")
     ResponseEntity<List<TaskResponseDto>> getExpiredTasks() {
-        return new ResponseEntity<>(taskFilterService.getExpiredTasks(),HttpStatus.OK);
+        List<TaskResponseDto> expiredTasks = taskFilterService.getExpiredTasks();
+        return ResponseEntity
+                .ok()
+                .body(expiredTasks);
     }
 
     @GetMapping("/created-by")
     ResponseEntity<List<TaskResponseDto>> getCreatedTasksByUser(@RequestParam Long id) {
-        return new ResponseEntity<>(taskFilterService.getCreatedTasksByUser(id), HttpStatus.OK);
+        List<TaskResponseDto> createdTasksByUser = taskFilterService.getCreatedTasksByUser(id);
+        return ResponseEntity.ok().body(createdTasksByUser);
     }
 
     @GetMapping("/assigned-to")
     ResponseEntity<List<TaskResponseDto>> getTasksAssignedToUser(@RequestParam Long id) {
-        return new ResponseEntity<>(taskFilterService.getAssignedTasksToUser(id), HttpStatus.OK);
+        List<TaskResponseDto> assignedTasksToUser = taskFilterService.getAssignedTasksToUser(id);
+        return ResponseEntity
+                .ok()
+                .body(assignedTasksToUser);
     }
 
     @GetMapping("/status")
     ResponseEntity<List<TaskResponseDto>> getTasksByStatus(@RequestParam String status) {
-        return new ResponseEntity<>(taskFilterService.getTaskByStatus(status), HttpStatus.OK);
+        List<TaskResponseDto> taskByStatus = taskFilterService.getTaskByStatus(status);
+        return ResponseEntity
+                .ok()
+                .body(taskByStatus);
     }
 
     @GetMapping("/creation-date-range")
@@ -88,7 +134,10 @@ public class TaskController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)LocalDateTime startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)LocalDateTime endDate) {
         TaskFilterDto filterDto = new TaskFilterDto(startDate, endDate);
-        return new ResponseEntity<>(taskFilterService.getTaskByCreationDateRange(filterDto),HttpStatus.OK);
+        List<TaskResponseDto> taskByCreationDateRange = taskFilterService.getTaskByCreationDateRange(filterDto);
+        return ResponseEntity
+                .ok()
+                .body(taskByCreationDateRange);
     }
 
     @GetMapping("/execution-date-range")
@@ -96,13 +145,17 @@ public class TaskController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)LocalDateTime startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)LocalDateTime endDate) {
         TaskFilterDto filterDto = new TaskFilterDto(startDate, endDate);
-        return new ResponseEntity<>(taskFilterService.getTaskByExecutionDateRange(filterDto),HttpStatus.OK);
+        List<TaskResponseDto> taskByExecutionDateRange = taskFilterService.getTaskByExecutionDateRange(filterDto);
+        return ResponseEntity
+                .ok()
+                .body(taskByExecutionDateRange);
     }
 
     @GetMapping("/task-type")
     ResponseEntity<List<TaskResponseDto>> getTasksByType(@RequestParam TaskType taskType) {
         TaskFilterDto filterDto = new TaskFilterDto(taskType);
-        return new ResponseEntity<>(taskFilterService.getTaskByType(filterDto),HttpStatus.OK);
+        List<TaskResponseDto> taskByType = taskFilterService.getTaskByType(filterDto);
+        return ResponseEntity.ok().body(taskByType);
     }
 
 
