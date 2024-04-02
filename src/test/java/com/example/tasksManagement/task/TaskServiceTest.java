@@ -74,7 +74,12 @@ class TaskServiceTest {
     }
 
     @Test
-    void cancelTask() {
+    void should_throw_exception_when_task_is_already_cancelled() {
+        AppUser customUser = createCustomUser();
+        Task task = createdTask(TaskStatus.CANCELLED, customUser);
+        when(taskRepository.findById(1L)).thenReturn(Optional.of(task));
+        assertThrows(BusinessException.class, () -> taskService.cancelTask(1L));
+
     }
 
     @Test
@@ -86,7 +91,16 @@ class TaskServiceTest {
     }
 
     @Test
-    void getWarnedTasks() {
+    void should_return_all_warned_tasks() {
+        List<Task> tasks = getTasksForMock(LocalDateTime.now().plusDays(2));
+        when(taskRepository.findWarnedTasks(any())).thenReturn(tasks);
+        List<TaskResponseDto> warnedTasks = taskFilterService.getWarnedTasks();
+        assertEquals(2,warnedTasks.size());
+        assertTrue(tasks.stream()
+                .allMatch(taskResponseDto -> taskResponseDto
+                        .getExecutionDate()
+                        .isBefore(LocalDateTime.now()
+                        .plusDays(expirationDaysWarning))));
     }
 
     @Test
