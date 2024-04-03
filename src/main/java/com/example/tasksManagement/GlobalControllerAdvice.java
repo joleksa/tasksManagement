@@ -15,7 +15,7 @@ public class GlobalControllerAdvice extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler( value = {BusinessException.class})
     protected ResponseEntity<Object> handleUnexpectedServerError(BusinessException ex) {
-        log.error("Unexpected exception occured.");
+        log.error(ex.getMessage(), ex);
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 }

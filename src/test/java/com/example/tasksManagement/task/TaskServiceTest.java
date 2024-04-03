@@ -49,6 +49,24 @@ class TaskServiceTest {
     }
 
     @Test
+    void should_change_task_status_to_closed() {
+        AppUser customUser = createCustomUser();
+        Task task = createdTask(TaskStatus.NEW,customUser);
+        when(taskRepository.findById(1L)).thenReturn(Optional.of(task));
+        when(taskRepository.save(task)).thenReturn(createdTask(TaskStatus.CLOSED, customUser));
+        TaskResponseDto result = taskService.closeTask(1L);
+        assertEquals(TaskStatus.CLOSED,result.getTaskStatus());
+    }
+
+    @Test
+    void should_throw_exception_when_task_is_already_closed() {
+        AppUser customUser = createCustomUser();
+        Task task = createdTask(TaskStatus.CLOSED,customUser);
+        when(taskRepository.findById(1L)).thenReturn(Optional.of(task));
+        assertThrows(BusinessException.class,() -> taskService.closeTask(1L));
+    }
+
+    @Test
     void should_change_task_status_to_in_progress() {
        AppUser customUser = createCustomUser();
        Task task = createdTask(TaskStatus.NEW,customUser);
@@ -74,6 +92,16 @@ class TaskServiceTest {
     }
 
     @Test
+    void should_change_task_status_to_cancelled() {
+        AppUser customUser = createCustomUser();
+        Task task = createdTask(TaskStatus.NEW,customUser);
+        when(taskRepository.findById(1L)).thenReturn(Optional.of(task));
+        when(taskRepository.save(task)).thenReturn(createdTask(TaskStatus.CANCELLED, customUser));
+        TaskResponseDto result = taskService.cancelTask(1L);
+        assertEquals(TaskStatus.CANCELLED, result.getTaskStatus());
+    }
+
+    @Test
     void should_throw_exception_when_task_is_already_cancelled() {
         AppUser customUser = createCustomUser();
         Task task = createdTask(TaskStatus.CANCELLED, customUser);
@@ -84,6 +112,10 @@ class TaskServiceTest {
 
     @Test
     void getAllTasks() {
+        List<Task> tasks = getTasksForMock(LocalDateTime.now().plusDays(10));
+        when(taskRepository.findAll()).thenReturn(tasks);
+        List<TaskResponseDto> actualTasks = taskFilterService.getAllTasks();
+        assertEquals(tasks.size(),actualTasks.size());
     }
 
     @Test

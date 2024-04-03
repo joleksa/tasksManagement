@@ -42,6 +42,8 @@ public class TaskService {
                 .taskStatus(TaskStatus.NEW)
                 .assignedUser(assignedUser)
                 .createdBy(createdByUser)
+                .creationDate(LocalDateTime.now())
+                .modificationDate(LocalDateTime.now())
                 .build();
         task.setOptionalExecutionDate(daysToEnd);
         return task;
@@ -85,19 +87,8 @@ public class TaskService {
     public TaskResponseDto assignTask(AssignTaskDto assignTaskDto) {
         Task task = findTaskById(assignTaskDto.getTaskId());
         AppUser assignedUser = appUserService.findUserById(assignTaskDto.getUserId());
-        assignTaskValidator(task, assignedUser);
-        task.setAssignedUser(assignedUser);
+        task.assignTo(task, assignedUser);
         return getResponseDto(saveModificatedTask(task));
-    }
-
-
-    private void assignTaskValidator(Task task, AppUser assignedUser) {
-        if (task.getTaskStatus() != TaskStatus.NEW) {
-            throw new BusinessException("Task must be in NEW status");
-        }
-        if (assignedUser == task.getAssignedUser()) {
-            throw new BusinessException("Task is already assigned to this user");
-        }
     }
 
     TaskResponseDto getResponseDto(Task task) {
