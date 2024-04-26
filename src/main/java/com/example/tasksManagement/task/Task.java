@@ -1,6 +1,7 @@
 package com.example.tasksManagement.task;
 
 
+import com.example.tasksManagement.BusinessException;
 import com.example.tasksManagement.task.taskEnum.TaskStatus;
 import com.example.tasksManagement.task.taskEnum.TaskType;
 import com.example.tasksManagement.user.AppUser;
@@ -41,5 +42,15 @@ public class Task {
         if (daysToEnd != null) {
             this.executionDate = LocalDateTime.now().plusDays(daysToEnd);
         }
+    }
+
+    public void assignTo(Task task, AppUser assignedUser) {
+        if (task.getTaskStatus() != TaskStatus.NEW) {
+            throw new BusinessException("Task must be in NEW status");
+        }
+        if (assignedUser == task.getAssignedUser()) {
+            throw new BusinessException("Task is already assigned to this user");
+        }
+        this.assignedUser = assignedUser;
     }
 }

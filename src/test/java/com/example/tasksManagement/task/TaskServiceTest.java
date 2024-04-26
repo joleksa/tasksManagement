@@ -1,10 +1,12 @@
 package com.example.tasksManagement.task;
 
 import com.example.tasksManagement.BusinessException;
+import com.example.tasksManagement.Dto.AssignTaskDto;
 import com.example.tasksManagement.Dto.TaskResponseDto;
 import com.example.tasksManagement.task.taskEnum.TaskStatus;
 import com.example.tasksManagement.task.taskEnum.TaskType;
 import com.example.tasksManagement.user.AppUser;
+import com.example.tasksManagement.user.AppUserRepository;
 import com.example.tasksManagement.user.AppUserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,6 +27,7 @@ import static org.mockito.Mockito.*;
 class TaskServiceTest {
 
     private final TaskRepository taskRepository = Mockito.mock(TaskRepository.class);
+    private final AppUserRepository appUserRepository = Mockito.mock(AppUserRepository.class);
     private final AppUserService appUserService = Mockito.mock(AppUserService.class);
     private TaskFilterService taskFilterService;
     private final int expirationDaysWarning = 3;
@@ -45,7 +48,21 @@ class TaskServiceTest {
     }
 
     @Test
-    void closeTask() {
+    void should_change_task_status_to_closed() {
+        AppUser customUser = createCustomUser();
+        Task task = createdTask(TaskStatus.NEW,customUser);
+        when(taskRepository.findById(1L)).thenReturn(Optional.of(task));
+        when(taskRepository.save(task)).thenReturn(createdTask(TaskStatus.CLOSED, customUser));
+        TaskResponseDto result = taskService.closeTask(1L);
+        assertEquals(TaskStatus.CLOSED,result.getTaskStatus());
+    }
+
+    @Test
+    void should_throw_exception_when_task_is_already_closed() {
+        AppUser customUser = createCustomUser();
+        Task task = createdTask(TaskStatus.CLOSED,customUser);
+        when(taskRepository.findById(1L)).thenReturn(Optional.of(task));
+        assertThrows(BusinessException.class,() -> taskService.closeTask(1L));
     }
 
     @Test
@@ -74,20 +91,55 @@ class TaskServiceTest {
     }
 
     @Test
+    void should_change_task_status_to_cancelled() {
+        AppUser customUser = createCustomUser();
+        Task task = createdTask(TaskStatus.NEW,customUser);
+        when(taskRepository.findById(1L)).thenReturn(Optional.of(task));
+        when(taskRepository.save(task)).thenReturn(createdTask(TaskStatus.CANCELLED, customUser));
+        TaskResponseDto result = taskService.cancelTask(1L);
+        assertEquals(TaskStatus.CANCELLED, result.getTaskStatus());
+    }
+
+    @Test
     void should_throw_exception_when_task_is_already_cancelled() {
         AppUser customUser = createCustomUser();
         Task task = createdTask(TaskStatus.CANCELLED, customUser);
         when(taskRepository.findById(1L)).thenReturn(Optional.of(task));
         assertThrows(BusinessException.class, () -> taskService.cancelTask(1L));
-
     }
 
     @Test
     void getAllTasks() {
+        List<Task> tasks = getTasksForMock(LocalDateTime.now().plusDays(10));
+        when(taskRepository.findAll()).thenReturn(tasks);
+        List<TaskResponseDto> actualTasks = taskFilterService.getAllTasks();
+        assertEquals(tasks.size(),actualTasks.size());
     }
 
     @Test
-    void assignTask() {
+    void should_throw_exception_when_task_is_already_assigned_to_user() {
+        AppUser customUser = createCustomUser();
+        Task task = createdTask(TaskStatus.NEW, customUser);
+        AssignTaskDto assignTaskDto = new AssignTaskDto();
+        when(taskRepository.findById(1L)).thenReturn(Optional.of(task));
+        assignTaskDto.setTaskId(task.getId());
+        when(appUserService.findUserById(1L)).thenReturn(customUser);
+        assignTaskDto.setUserId(customUser.getId());
+        BusinessException ex = assertThrows(BusinessException.class, () -> taskService.assignTask(assignTaskDto));
+        assertTrue(ex.getMessage().contains("Task is already assigned to this user"));
+    }
+
+    @Test
+    void should_throw_exception_when_task_is_not_in_new_status() {
+        AppUser customUser = createCustomUser();
+        Task task = createdTask(TaskStatus.IN_PROGRESS, customUser);
+        AssignTaskDto assignTaskDto = new AssignTaskDto();
+        when(taskRepository.findById(1L)).thenReturn(Optional.of(task));
+        assignTaskDto.setTaskId(task.getId());
+        when(appUserService.findUserById(1L)).thenReturn(customUser);
+        assignTaskDto.setUserId(customUser.getId());
+        BusinessException ex = assertThrows(BusinessException.class, () -> taskService.assignTask(assignTaskDto));
+        assertTrue(ex.getMessage().contains("Task must be in NEW status"));
     }
 
     @Test
@@ -120,6 +172,6 @@ class TaskServiceTest {
     }
 
     private AppUser createCustomUser() {
-        return new AppUser( "Adam", "Klocek", "akloc");
+        return new AppUser( 1L,"Adam", "Klocek", "akloc");
     }
 }
