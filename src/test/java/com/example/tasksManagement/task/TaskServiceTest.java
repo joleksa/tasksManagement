@@ -1,10 +1,12 @@
 package com.example.tasksManagement.task;
 
 import com.example.tasksManagement.BusinessException;
+import com.example.tasksManagement.Dto.AssignTaskDto;
 import com.example.tasksManagement.Dto.TaskResponseDto;
 import com.example.tasksManagement.task.taskEnum.TaskStatus;
 import com.example.tasksManagement.task.taskEnum.TaskType;
 import com.example.tasksManagement.user.AppUser;
+import com.example.tasksManagement.user.AppUserRepository;
 import com.example.tasksManagement.user.AppUserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,6 +27,7 @@ import static org.mockito.Mockito.*;
 class TaskServiceTest {
 
     private final TaskRepository taskRepository = Mockito.mock(TaskRepository.class);
+    private final AppUserRepository appUserRepository = Mockito.mock(AppUserRepository.class);
     private final AppUserService appUserService = Mockito.mock(AppUserService.class);
     private TaskFilterService taskFilterService;
     private final int expirationDaysWarning = 3;
@@ -42,10 +45,6 @@ class TaskServiceTest {
 
     @Test
     void findTaskById() {
-    }
-
-    @Test
-    void closeTask() {
     }
 
     @Test
@@ -107,7 +106,6 @@ class TaskServiceTest {
         Task task = createdTask(TaskStatus.CANCELLED, customUser);
         when(taskRepository.findById(1L)).thenReturn(Optional.of(task));
         assertThrows(BusinessException.class, () -> taskService.cancelTask(1L));
-
     }
 
     @Test
@@ -119,7 +117,29 @@ class TaskServiceTest {
     }
 
     @Test
-    void assignTask() {
+    void should_throw_exception_when_task_is_already_assigned_to_user() {
+        AppUser customUser = createCustomUser();
+        Task task = createdTask(TaskStatus.NEW, customUser);
+        AssignTaskDto assignTaskDto = new AssignTaskDto();
+        when(taskRepository.findById(1L)).thenReturn(Optional.of(task));
+        assignTaskDto.setTaskId(task.getId());
+        when(appUserService.findUserById(1L)).thenReturn(customUser);
+        assignTaskDto.setUserId(customUser.getId());
+        BusinessException ex = assertThrows(BusinessException.class, () -> taskService.assignTask(assignTaskDto));
+        assertTrue(ex.getMessage().contains("Task is already assigned to this user"));
+    }
+
+    @Test
+    void should_throw_exception_when_task_is_not_in_new_status() {
+        AppUser customUser = createCustomUser();
+        Task task = createdTask(TaskStatus.IN_PROGRESS, customUser);
+        AssignTaskDto assignTaskDto = new AssignTaskDto();
+        when(taskRepository.findById(1L)).thenReturn(Optional.of(task));
+        assignTaskDto.setTaskId(task.getId());
+        when(appUserService.findUserById(1L)).thenReturn(customUser);
+        assignTaskDto.setUserId(customUser.getId());
+        BusinessException ex = assertThrows(BusinessException.class, () -> taskService.assignTask(assignTaskDto));
+        assertTrue(ex.getMessage().contains("Task must be in NEW status"));
     }
 
     @Test
@@ -152,6 +172,6 @@ class TaskServiceTest {
     }
 
     private AppUser createCustomUser() {
-        return new AppUser( "Adam", "Klocek", "akloc");
+        return new AppUser( 1L,"Adam", "Klocek", "akloc");
     }
 }
