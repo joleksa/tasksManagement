@@ -1,9 +1,11 @@
 package com.example.tasksManagement.config;
 
 
+import com.example.tasksManagement.user.Role;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -25,8 +27,15 @@ public class SecurityConfiguration {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/api/v1/auth/**")
-                        .permitAll()
+                        .requestMatchers(HttpMethod.POST,"/api/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/task/**").hasAnyRole("USER","ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/task/**").hasAnyRole(Role.ADMIN.name(), Role.EDITOR.name())
+                        .requestMatchers(HttpMethod.PATCH, "/api/task/**").hasAnyRole(Role.ADMIN.name(), Role.EDITOR.name())
+                        .requestMatchers(HttpMethod.DELETE, "/api/task/**").hasRole(Role.ADMIN.name())
+                        .requestMatchers(HttpMethod.GET, "/api/user/**").hasAnyRole(Role.USER.name(), Role.ADMIN.name(), Role.EDITOR.name())
+                        .requestMatchers(HttpMethod.POST, "/api/user/**").hasAnyRole(Role.ADMIN.name(), Role.EDITOR.name())
+                        .requestMatchers(HttpMethod.PATCH, "/api/user/**").hasAnyRole(Role.ADMIN.name(), Role.EDITOR.name())
+                        .requestMatchers(HttpMethod.DELETE, "/api/user/**").hasRole(Role.ADMIN.name())
                         .anyRequest()
                         .authenticated())
                 .sessionManagement(sessionManagementConfigurer -> sessionManagementConfigurer
