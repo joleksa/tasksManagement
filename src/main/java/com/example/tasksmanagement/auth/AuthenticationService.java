@@ -32,7 +32,7 @@ public class AuthenticationService {
                 .surname(request.getSurname())
                 .login(request.getLogin())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .role(Role.USER)
+                .role(request.getRole())
                 .build();
         repository.save(user);
         var jwtToken = jwtService.generateToken(user);
