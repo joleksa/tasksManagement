@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -27,6 +28,7 @@ public class TaskController {
     }
 
     @PostMapping
+    //@PreAuthorize("hasAnyAuthority('admin:create'))
     ResponseEntity<TaskResponseDto> createNewTask(@RequestBody TaskDto taskDto) {
         return ResponseEntity
                 .ok()
