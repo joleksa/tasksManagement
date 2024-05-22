@@ -4,7 +4,6 @@ import com.example.tasksmanagement.BusinessException;
 import com.example.tasksmanagement.config.JwtService;
 import com.example.tasksmanagement.user.AppUser;
 import com.example.tasksmanagement.user.AppUserRepository;
-import com.example.tasksmanagement.user.Role;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -39,7 +38,6 @@ public class AuthenticationService {
         return AuthenticationResponse.builder()
                 .token(jwtToken)
                 .build();
-
     }
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
