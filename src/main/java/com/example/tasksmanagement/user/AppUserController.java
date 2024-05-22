@@ -3,6 +3,7 @@ package com.example.tasksmanagement.user;
 import com.example.tasksmanagement.dto.AppUserDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -19,6 +20,7 @@ public class AppUserController {
         this.appUserService = appUserService;
     }
 
+    @PreAuthorize("hasAuthority({'admin:read'})")
     @GetMapping("/all")
     public ResponseEntity<List<AppUserDto>> findAllUsers() {
         return ResponseEntity
@@ -27,6 +29,7 @@ public class AppUserController {
     }
 
     @GetMapping("/user")
+    @PreAuthorize("hasAuthority({'admin:read'})")
     public ResponseEntity<AppUserDto> findUser(@RequestParam Long id) {
         return ResponseEntity
                 .ok()
@@ -34,6 +37,7 @@ public class AppUserController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAuthority({'admin:create'})")
     public ResponseEntity<Void> registerNewUser(@RequestBody AppUser appUser) {
         appUserService.addNewUser(appUser);
         return ResponseEntity
@@ -42,6 +46,7 @@ public class AppUserController {
     }
 
     @DeleteMapping
+    @PreAuthorize("hasAuthority({'admin:delete'})")
     public ResponseEntity<Void> deleteUser(@RequestParam String login) {
         appUserService.deleteUser(login);
         return ResponseEntity
