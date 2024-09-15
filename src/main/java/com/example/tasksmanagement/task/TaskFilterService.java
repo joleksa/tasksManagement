@@ -37,11 +37,6 @@ public class TaskFilterService {
         this.clock = clock;
     }
 
-
-    public List<TaskResponseDto> getAllTasks() {
-        return taskRepository.findAll()
-                .stream().map(taskService::getResponseDto).toList();
-    }
     public Page<TaskResponseDto> getAllTasksSortedAndPaginated(int pageNo, int pageSize, String field, String direction) {
         Page<Task> tasks = getPageableTasks(pageNo, pageSize, field, direction);
         List<TaskResponseDto> listTaskResponseDto =  tasks.getContent().stream()
@@ -94,15 +89,15 @@ public class TaskFilterService {
 
     public List<TaskResponseDto> getTaskByType(TaskFilterDto filterDto) {//searching by filter
         return taskRepository.findAll().stream()
-                .filter(task -> task.getTaskType() == filterDto.getTaskType())
+                .filter(task -> task.getTaskType() == filterDto.taskType())
                 .map(taskService::getResponseDto)
                 .toList();
     }
 
     public List<TaskResponseDto> getTaskByCreationDateRange(TaskFilterDto filterDto) {//searching by filter
         return taskRepository.findAll().stream()
-                .filter(task -> task.getCreationDate().isAfter(filterDto.getStartDate()) &&
-                        task.getCreationDate().isBefore(filterDto.getEndDate()))
+                .filter(task -> task.getCreationDate().isAfter(filterDto.startDate()) &&
+                        task.getCreationDate().isBefore(filterDto.endDate()))
                 .map(taskService::getResponseDto)
                 .toList();
     }
@@ -110,8 +105,8 @@ public class TaskFilterService {
     public List<TaskResponseDto> getTaskByExecutionDateRange(TaskFilterDto filterDto) {
         return taskRepository.findAll().stream()
                 .filter(task -> task.getExecutionDate() != null &&
-                        task.getExecutionDate().isAfter(filterDto.getStartDate())
-                        && task.getExecutionDate().isBefore(filterDto.getEndDate()))
+                        task.getExecutionDate().isAfter(filterDto.startDate())
+                        && task.getExecutionDate().isBefore(filterDto.endDate()))
                 .map(taskService::getResponseDto)
                 .toList();
     }

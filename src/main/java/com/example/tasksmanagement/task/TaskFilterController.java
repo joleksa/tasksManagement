@@ -38,14 +38,6 @@ public class TaskFilterController {
     }
 
     @GetMapping("/all")
-    ResponseEntity<List<TaskResponseDto>> getAllTasks() {
-        List<TaskResponseDto> allTasks = taskFilterService.getAllTasks();
-        return ResponseEntity
-                .ok()
-                .body(allTasks);
-    }
-
-    @GetMapping("/all-sorted")
     ResponseEntity<Page<TaskResponseDto>> getAllTasksSortedAndPaginated
             (@RequestParam int pageNo,
              @RequestParam int pageSize,

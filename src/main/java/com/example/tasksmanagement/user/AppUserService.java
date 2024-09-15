@@ -1,7 +1,9 @@
 package com.example.tasksmanagement.user;
 
 import com.example.tasksmanagement.BusinessException;
+import com.example.tasksmanagement.dto.AppUserDto;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,8 +18,15 @@ public class AppUserService {
         this.appUserRepository = appUserRepository;
     }
 
-    public List<AppUser> getAppUsers() {
-        return appUserRepository.findAll();
+    public Page<AppUserDto> getAllUsersSortedAndPaginated(int pageNo, int pageSize, String field, String direction) {
+        Page<AppUser> users = getPageableUsers(pageNo, pageSize, field, direction);
+        List<AppUserDto> listAppUserDto = users.getContent().stream().map(this::toDto).toList();
+        return new PageImpl<>(listAppUserDto, users.getPageable(), users.getTotalElements());
+    }
+
+    public Page<AppUser> getPageableUsers(int pageNo, int pageSize, String field, String direction) {
+        Pageable pageable = PageRequest.of(pageNo, pageSize).withSort(Sort.Direction.fromString(direction),field);
+        return appUserRepository.findAll(pageable);
     }
 
     public AppUser findUserByLogin(String login) {
@@ -30,14 +39,6 @@ public class AppUserService {
         return userExistsValidation(userOptional);
     }
 
-    public void addNewUser(AppUser appUser) {
-        Optional<AppUser> userOptional = appUserRepository.findByLogin(appUser.getLogin());
-        if (userOptional.isPresent()) {
-            throw new BusinessException("login is taken, enter another login");
-        }
-            appUserRepository.save(appUser);
-    }
-
     public void deleteUser(String login) {
         AppUser user = findUserByLogin(login);
         appUserRepository.delete(user);
@@ -48,6 +49,10 @@ public class AppUserService {
             throw new BusinessException("user doesn't exist");
         }
         return userOptional.get();
+    }
+
+    AppUserDto toDto(AppUser appUser) {
+        return new AppUserDto(appUser.getId(), appUser.getName(), appUser.getSurname(), appUser.getLogin());
     }
 
 
