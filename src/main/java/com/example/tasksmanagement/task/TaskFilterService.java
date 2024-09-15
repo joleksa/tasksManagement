@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -21,17 +22,19 @@ public class TaskFilterService {
     private final AppUserService appUserService;
     private final TaskService taskService;
     private final int expirationDaysWarning;
+    private final Clock clock;
 
     @Autowired
     public TaskFilterService(TaskRepository taskRepository,
-                       AppUserService appUserService,
-                       TaskService taskService,
-                       @Value("${task.expiration-warning-days}")
-                       int expirationDaysWarning) {
+                             AppUserService appUserService,
+                             TaskService taskService,
+                             @Value("${task.expiration-warning-days}")
+                       int expirationDaysWarning, Clock clock) {
         this.taskRepository = taskRepository;
         this.appUserService = appUserService;
         this.taskService = taskService;
         this.expirationDaysWarning = expirationDaysWarning;
+        this.clock = clock;
     }
 
 
@@ -55,7 +58,7 @@ public class TaskFilterService {
     }
 
     public List<TaskResponseDto> getWarnedTasks() {
-        LocalDateTime warningDate = LocalDateTime.now()
+        LocalDateTime warningDate = LocalDateTime.now(clock)
                 .plusDays(expirationDaysWarning);
         return taskRepository.findWarnedTasks(warningDate).stream()
                 .map(taskService::getResponseDto)
@@ -63,7 +66,7 @@ public class TaskFilterService {
     }
 
     public List<TaskResponseDto> getExpiredTasks() {//searching by query
-        LocalDateTime expiredDate = LocalDateTime.now();
+        LocalDateTime expiredDate = LocalDateTime.now(clock);
         return taskRepository.findExpiredTasks(expiredDate).stream()
                 .map(taskService::getResponseDto)
                 .toList();

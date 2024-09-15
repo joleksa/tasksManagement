@@ -8,6 +8,8 @@ import com.example.tasksmanagement.user.AppUser;
 import jakarta.persistence.*;
 import lombok.*;
 
+
+import java.time.Clock;
 import java.time.LocalDateTime;
 
 
@@ -38,9 +40,9 @@ public class Task {
     private LocalDateTime modificationDate;
     private LocalDateTime executionDate;
 
-    public void setOptionalExecutionDate(Integer daysToEnd) {
+    public void setOptionalExecutionDate(Integer daysToEnd, Clock clock) {
         if (daysToEnd != null) {
-            this.executionDate = LocalDateTime.now().plusDays(daysToEnd);
+            this.executionDate = LocalDateTime.now(clock).plusDays(daysToEnd);
         }
     }
 

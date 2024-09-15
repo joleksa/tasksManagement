@@ -7,9 +7,9 @@ import com.example.tasksmanagement.dto.TaskResponseDto;
 import com.example.tasksmanagement.task.taskEnum.TaskStatus;
 import com.example.tasksmanagement.user.AppUser;
 import com.example.tasksmanagement.user.AppUserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -18,13 +18,13 @@ import java.util.Optional;
 public class TaskService {
     private final TaskRepository taskRepository;
     private final AppUserService appUserService;
+    private final Clock clock;
 
-    @Autowired
     public TaskService(TaskRepository taskRepository,
-                       AppUserService appUserService)
-                       {
+                       AppUserService appUserService, Clock clock) {
         this.taskRepository = taskRepository;
         this.appUserService = appUserService;
+        this.clock = clock;
     }
 
     public TaskResponseDto createTask(TaskDto taskDto) {
@@ -42,10 +42,10 @@ public class TaskService {
                 .taskStatus(TaskStatus.NEW)
                 .assignedUser(assignedUser)
                 .createdBy(createdByUser)
-                .creationDate(LocalDateTime.now())
-                .modificationDate(LocalDateTime.now())
+                .creationDate(LocalDateTime.now(clock))
+                .modificationDate(LocalDateTime.now(clock))
                 .build();
-        task.setOptionalExecutionDate(daysToEnd);
+        task.setOptionalExecutionDate(daysToEnd,clock);
         return task;
     }
 
@@ -97,7 +97,7 @@ public class TaskService {
     }
 
     private Task saveModificatedTask(Task task) {
-        task.setModificationDate(LocalDateTime.now());
+        task.setModificationDate(LocalDateTime.now(clock));
         return taskRepository.save(task);
     }
 }
