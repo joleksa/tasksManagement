@@ -1,16 +1,14 @@
 package com.example.tasksmanagement.dto;
 
 import com.example.tasksmanagement.task.taskEnum.TaskType;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 
 
-@Getter
-@AllArgsConstructor
-public class TaskDto {
-    private TaskType taskType;
-    private String description;
-    private Long assignedUserId;
-    private Long createdById;
-    private Integer daysToEnd;
+public record TaskDto(
+         TaskType taskType,
+         String description,
+         Long assignedUserId,
+         Long createdById,
+         Integer daysToEnd
+) {
+
 }

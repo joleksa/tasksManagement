@@ -3,28 +3,22 @@ package com.example.tasksmanagement.dto;
 import com.example.tasksmanagement.task.taskEnum.TaskStatus;
 import com.example.tasksmanagement.task.taskEnum.TaskType;
 import jakarta.annotation.Nullable;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 
 import java.time.LocalDateTime;
 
-@Getter
-public class TaskFilterDto {
+public record TaskFilterDto(TaskStatus taskStatus,
+                            TaskType taskType,
+                            Long assignedUserId,
+                            @Nullable LocalDateTime startDate,
+                            @Nullable LocalDateTime endDate) {
 
-    private TaskStatus taskStatus;
-    private TaskType taskType;
-    private Long assignedUserId;
-    @Nullable
-    private LocalDateTime startDate;
-    @Nullable
-    private LocalDateTime endDate;
 
     public TaskFilterDto(TaskType taskType) {
-        this.taskType = taskType;
+        this(null, taskType, null, null, null);
     }
+
     public TaskFilterDto(LocalDateTime startDate, LocalDateTime endDate) {
-        this.startDate = startDate;
-        this.endDate = endDate;
+        this(null, null, null, startDate, endDate);
     }
 }
 
