@@ -1,13 +1,10 @@
 package com.example.tasksmanagement.user;
 
 import com.example.tasksmanagement.dto.AppUserDto;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-
-import java.util.List;
 
 @RestController
 @RequestMapping("api/users")
@@ -15,17 +12,21 @@ public class AppUserController {
 
     private final AppUserService appUserService;
 
-    @Autowired
     public AppUserController(AppUserService appUserService) {
         this.appUserService = appUserService;
     }
 
     @PreAuthorize("hasAuthority({'admin:read'})")
     @GetMapping("/all")
-    public ResponseEntity<List<AppUserDto>> findAllUsers() {
+    public ResponseEntity<Page<AppUserDto>> getAllUsersSortedAndPaginated
+            (@RequestParam int pageNo,
+             @RequestParam int pageSize,
+             @RequestParam String field,
+             @RequestParam String direction) {
+        Page<AppUserDto> allUsersSortedAndPaginated = appUserService.getAllUsersSortedAndPaginated(pageNo, pageSize, field, direction);
         return ResponseEntity
                 .ok()
-                .body(appUserService.getAppUsers().stream().map(this::toDto).toList());
+                .body(allUsersSortedAndPaginated);
     }
 
     @GetMapping("/user")
@@ -34,15 +35,6 @@ public class AppUserController {
         return ResponseEntity
                 .ok()
                 .body(toDto(appUserService.findUserById(id)));
-    }
-
-    @PostMapping
-    @PreAuthorize("hasAuthority({'admin:create'})")
-    public ResponseEntity<Void> registerNewUser(@RequestBody AppUser appUser) {
-        appUserService.addNewUser(appUser);
-        return ResponseEntity
-                .ok()
-                .build();
     }
 
     @DeleteMapping
@@ -55,10 +47,7 @@ public class AppUserController {
     }
 
     private AppUserDto toDto(AppUser appUser) {
-        return new AppUserDto(appUser.getId(),
-                appUser.getName(),
-                appUser.getSurname(),
-                appUser.getLogin());
+        return new AppUserDto(appUser.getId(), appUser.getName(), appUser.getSurname(), appUser.getLogin());
     }
 
 }

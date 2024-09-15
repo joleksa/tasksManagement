@@ -11,9 +11,13 @@ import com.example.tasksmanagement.user.AppUserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,16 +33,15 @@ class TaskServiceTest {
     private TaskFilterService taskFilterService;
     private final int expirationDaysWarning = 3;
     private TaskService taskService;
-    private final Clock clock;
 
-    public TaskServiceTest(Clock clock) {
-        this.clock = clock;
+    public Clock clock() {
+        return Clock.system(ZoneId.of("Europe/Warsaw"));
     }
 
     @BeforeEach
     void setUp() {
-        taskService = new TaskService(taskRepository, appUserService,clock);
-        taskFilterService = new TaskFilterService(taskRepository, appUserService, taskService, expirationDaysWarning, clock);
+        taskService = new TaskService(taskRepository, appUserService, clock());
+        taskFilterService = new TaskFilterService(taskRepository, appUserService, taskService, expirationDaysWarning, clock());
     }
 
     @Test
@@ -56,7 +59,7 @@ class TaskServiceTest {
         when(taskRepository.findById(1L)).thenReturn(Optional.of(task));
         when(taskRepository.save(task)).thenReturn(createdTask(TaskStatus.CLOSED, customUser));
         TaskResponseDto result = taskService.closeTask(1L);
-        assertEquals(TaskStatus.CLOSED, result.getTaskStatus());
+        assertEquals(TaskStatus.CLOSED, result.taskStatus());
     }
 
     @Test
@@ -74,7 +77,7 @@ class TaskServiceTest {
         when(taskRepository.findById(1L)).thenReturn(Optional.of(task));
         when(taskRepository.save(task)).thenReturn(createdTask(TaskStatus.IN_PROGRESS, customUser));
         TaskResponseDto result = taskService.inProgressTask(1L);
-        assertEquals(TaskStatus.IN_PROGRESS, result.getTaskStatus());
+        assertEquals(TaskStatus.IN_PROGRESS, result.taskStatus());
     }
 
     @Test
@@ -88,8 +91,8 @@ class TaskServiceTest {
 
     Task createdTask(TaskStatus taskStatus, AppUser customUser) {
         return new Task(1L, TaskType.PREPARE_CLIENT_PRESENTATION, "test",
-                taskStatus, customUser, customUser, LocalDateTime.now(clock).minusDays(2),
-                LocalDateTime.now(clock).minusDays(2), LocalDateTime.now(clock).plusDays(5));
+                taskStatus, customUser, customUser, LocalDateTime.now(clock()).minusDays(2),
+                LocalDateTime.now(clock()).minusDays(2), LocalDateTime.now(clock()).plusDays(5));
     }
 
     @Test
@@ -99,7 +102,7 @@ class TaskServiceTest {
         when(taskRepository.findById(1L)).thenReturn(Optional.of(task));
         when(taskRepository.save(task)).thenReturn(createdTask(TaskStatus.CANCELLED, customUser));
         TaskResponseDto result = taskService.cancelTask(1L);
-        assertEquals(TaskStatus.CANCELLED, result.getTaskStatus());
+        assertEquals(TaskStatus.CANCELLED, result.taskStatus());
     }
 
     @Test
@@ -112,21 +115,20 @@ class TaskServiceTest {
 
     @Test
     void getAllTasks() {
-        List<Task> tasks = getTasksForMock(LocalDateTime.now(clock).plusDays(10));
-        when(taskRepository.findAll()).thenReturn(tasks);
-        List<TaskResponseDto> actualTasks = taskFilterService.getAllTasks();
-        assertEquals(tasks.size(), actualTasks.size());
+        List<Task> tasks = getTasksForMock(LocalDateTime.now(clock()).plusDays(10));
+        Page<Task> taskPage = new PageImpl<>(tasks);
+        when(taskRepository.findAll(any(Pageable.class))).thenReturn(taskPage);
+        Page<TaskResponseDto> actualTasks = taskFilterService.getAllTasksSortedAndPaginated(0,10, "executionDate", "ASC");
+        assertEquals(tasks.size(), actualTasks.getTotalElements());
     }
 
     @Test
     void should_throw_exception_when_task_is_already_assigned_to_user() {
         AppUser customUser = createCustomUser();
         Task task = createdTask(TaskStatus.NEW, customUser);
-        AssignTaskDto assignTaskDto = new AssignTaskDto();
+        AssignTaskDto assignTaskDto = new AssignTaskDto(task.getId(), customUser.getId());
         when(taskRepository.findById(1L)).thenReturn(Optional.of(task));
-        assignTaskDto.setTaskId(task.getId());
         when(appUserService.findUserById(1L)).thenReturn(customUser);
-        assignTaskDto.setUserId(customUser.getId());
         BusinessException ex = assertThrows(BusinessException.class, () -> taskService.assignTask(assignTaskDto));
         assertTrue(ex.getMessage().contains("Task is already assigned to this user"));
     }
@@ -135,41 +137,39 @@ class TaskServiceTest {
     void should_throw_exception_when_task_is_not_in_new_status() {
         AppUser customUser = createCustomUser();
         Task task = createdTask(TaskStatus.IN_PROGRESS, customUser);
-        AssignTaskDto assignTaskDto = new AssignTaskDto();
+        AssignTaskDto assignTaskDto = new AssignTaskDto(task.getId(), customUser.getId());
         when(taskRepository.findById(1L)).thenReturn(Optional.of(task));
-        assignTaskDto.setTaskId(task.getId());
         when(appUserService.findUserById(1L)).thenReturn(customUser);
-        assignTaskDto.setUserId(customUser.getId());
         BusinessException ex = assertThrows(BusinessException.class, () -> taskService.assignTask(assignTaskDto));
         assertTrue(ex.getMessage().contains("Task must be in NEW status"));
     }
 
     @Test
     void should_return_all_warned_tasks() {
-        List<Task> tasks = getTasksForMock(LocalDateTime.now(clock).plusDays(2));
+        List<Task> tasks = getTasksForMock(LocalDateTime.now(clock()).plusDays(2));
         when(taskRepository.findWarnedTasks(any())).thenReturn(tasks);
         List<TaskResponseDto> warnedTasks = taskFilterService.getWarnedTasks();
         assertEquals(2, warnedTasks.size());
         assertTrue(tasks.stream()
                 .allMatch(taskResponseDto -> taskResponseDto
                         .getExecutionDate()
-                        .isBefore(LocalDateTime.now(clock)
+                        .isBefore(LocalDateTime.now(clock())
                                 .plusDays(expirationDaysWarning))));
     }
 
     @Test
     void should_return_all_expired_tasks() {
-        List<Task> tasks = getTasksForMock(LocalDateTime.now(clock).minusDays(1));
+        List<Task> tasks = getTasksForMock(LocalDateTime.now(clock()).minusDays(1));
         when(taskRepository.findExpiredTasks(any())).thenReturn(tasks);
         List<TaskResponseDto> expiredTasks = taskFilterService.getExpiredTasks();
         assertEquals(2, expiredTasks.size());
-        assertTrue(LocalDateTime.now(clock).isAfter(expiredTasks.getFirst().getExecutionDate()));
+        assertTrue(LocalDateTime.now(clock()).isAfter(expiredTasks.getFirst().executionDate()));
     }
 
     private List<Task> getTasksForMock(LocalDateTime expirationDate) {
         AppUser customUser = createCustomUser();
-        Task task = new Task(1L, TaskType.CREATE_MONTHLY_REPORT, "test", TaskStatus.NEW, customUser, customUser, LocalDateTime.now(clock).minusDays(2), LocalDateTime.now(clock).minusDays(2), expirationDate);
-        Task task2 = new Task(2L, TaskType.CREATE_MONTHLY_REPORT, "test2", TaskStatus.NEW, customUser, customUser, LocalDateTime.now(clock).minusDays(2), LocalDateTime.now(clock).minusDays(2), expirationDate);
+        Task task = new Task(1L, TaskType.CREATE_MONTHLY_REPORT, "test", TaskStatus.NEW, customUser, customUser, LocalDateTime.now(clock()).minusDays(2), LocalDateTime.now(clock()).minusDays(2), expirationDate);
+        Task task2 = new Task(2L, TaskType.CREATE_MONTHLY_REPORT, "test2", TaskStatus.NEW, customUser, customUser, LocalDateTime.now(clock()).minusDays(2), LocalDateTime.now(clock()).minusDays(2), expirationDate);
         return List.of(task, task2);
     }
 

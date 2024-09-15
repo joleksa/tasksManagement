@@ -28,17 +28,17 @@ public class TaskService {
     }
 
     public TaskResponseDto createTask(TaskDto taskDto) {
-        AppUser assignedUser = appUserService.findUserById(taskDto.getAssignedUserId());
-        AppUser createdByUser = appUserService.findUserById(taskDto.getCreatedById());
+        AppUser assignedUser = appUserService.findUserById(taskDto.assignedUserId());
+        AppUser createdByUser = appUserService.findUserById(taskDto.createdById());
         Task task = createNewTask(taskDto, assignedUser, createdByUser);
         return getResponseDto(taskRepository.save(task));
     }
 
     private Task createNewTask(TaskDto taskDto, AppUser assignedUser, AppUser createdByUser) {
-        Integer daysToEnd = taskDto.getDaysToEnd();
+        Integer daysToEnd = taskDto.daysToEnd();
         Task task = Task.builder()
-                .taskType(taskDto.getTaskType())
-                .description(taskDto.getDescription())
+                .taskType(taskDto.taskType())
+                .description(taskDto.description())
                 .taskStatus(TaskStatus.NEW)
                 .assignedUser(assignedUser)
                 .createdBy(createdByUser)
@@ -85,8 +85,8 @@ public class TaskService {
     }
 
     public TaskResponseDto assignTask(AssignTaskDto assignTaskDto) {
-        Task task = findTaskById(assignTaskDto.getTaskId());
-        AppUser assignedUser = appUserService.findUserById(assignTaskDto.getUserId());
+        Task task = findTaskById(assignTaskDto.taskId());
+        AppUser assignedUser = appUserService.findUserById(assignTaskDto.userId());
         task.assignTo(task, assignedUser);
         return getResponseDto(saveModificatedTask(task));
     }
