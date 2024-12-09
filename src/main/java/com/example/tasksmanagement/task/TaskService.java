@@ -7,12 +7,12 @@ import com.example.tasksmanagement.dto.TaskResponseDto;
 import com.example.tasksmanagement.task.taskEnum.TaskStatus;
 import com.example.tasksmanagement.user.AppUser;
 import com.example.tasksmanagement.user.AppUserService;
-import org.springframework.stereotype.Service;
-
 import java.time.Clock;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
-
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class TaskService {
@@ -27,6 +27,7 @@ public class TaskService {
         this.clock = clock;
     }
 
+    @Transactional
     public TaskResponseDto createTask(TaskDto taskDto) {
         AppUser assignedUser = appUserService.findUserById(taskDto.assignedUserId());
         AppUser createdByUser = appUserService.findUserById(taskDto.createdById());
@@ -89,6 +90,15 @@ public class TaskService {
         AppUser assignedUser = appUserService.findUserById(assignTaskDto.userId());
         task.assignTo(task, assignedUser);
         return getResponseDto(saveModificatedTask(task));
+    }
+
+    public void deleteTask(Long id) {
+        Task task = findTaskById(id);
+        taskRepository.delete(task);
+    }
+
+    public void deleteAllTasks(List<Task> tasks) {
+        taskRepository.deleteAll(tasks);
     }
 
     TaskResponseDto getResponseDto(Task task) {
